@@ -2,10 +2,12 @@ import os
 import sys
 
 import requests
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel
 
 SCREEN_SIZE = [600, 450]
+STEP = [5, 2, 1, 0.5, 0.05]
 
 
 class ShowGeo(QWidget):
@@ -51,6 +53,36 @@ class ShowGeo(QWidget):
 
     def closeEvent(self, event):
         os.remove(self.map_file)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_PageUp:
+            self.z += 1
+            self.z = min(self.z, 21)
+            self.show_image()
+        if event.key() == Qt.Key.Key_PageDown:
+            self.z -= 1
+            self.z = max(self.z, 0)
+            self.show_image()
+        if event.key() == Qt.Key.Key_Left:
+            k = STEP[self.z // len(STEP)]
+            if -180 <= self.ll[0] - k <= 180:
+                self.ll[0] -= k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Right:
+            k = STEP[self.z // len(STEP)]
+            if -180 <= self.ll[0] + k <= 180:
+                self.ll[0] += k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Up:
+            k = STEP[self.z // len(STEP)]
+            if -90 <= self.ll[1] + k <= 90:
+                self.ll[1] += k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Down:
+            k = STEP[self.z // len(STEP)]
+            if -90 <= self.ll[1] - k <= 90:
+                self.ll[1] -= k
+            self.show_image()
 
 
 if __name__ == '__main__':
