@@ -24,6 +24,11 @@ class ShowGeo(QWidget):
         self.initUI()
         self.show_image()
         self.search.clicked.connect(self.search_clckd)
+        self.reset.clicked.connect(self.reset_clckd)
+
+    def reset_clckd(self):
+        self.not_ness = ''
+        self.show_image()
 
     def search_clckd(self):
         self.ll = self.find_by_geocoder(self.input.text())
@@ -89,6 +94,10 @@ class ShowGeo(QWidget):
         self.radio_btn.setText("Тёмная тема")
         self.radio_btn.move(30, 470)
         self.radio_btn.toggled.connect(self.dark_mode)
+
+        self.reset = QPushButton(self)
+        self.reset.setText("Сброс поискового результата")
+        self.reset.move(130, 470)
 
     def dark_mode(self):
         if self.radio_btn.isChecked():
