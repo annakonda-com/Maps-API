@@ -19,7 +19,7 @@ class ShowGeo(QWidget):
         self.show_image()
 
     def getImage(self):
-        apikey = '4dbe104a-d5c7-4d20-bb68-3ae6ac4cae00'
+        apikey = '760b4eef-798f-4412-a798-41130c1bad77'
         map_params = {
             "ll": ",".join([str(self.ll[0]), str(self.ll[1])]),
             "apikey": apikey,
@@ -62,26 +62,6 @@ class ShowGeo(QWidget):
         if event.key() == Qt.Key.Key_PageDown:
             self.z -= 1
             self.z = max(self.z, 0)
-            self.show_image()
-        if event.key() == Qt.Key.Key_Left:
-            k = STEP[self.z // len(STEP)]
-            if -180 <= self.ll[0] - k <= 180:
-                self.ll[0] -= k
-            self.show_image()
-        if event.key() == Qt.Key.Key_Right:
-            k = STEP[self.z // len(STEP)]
-            if -180 <= self.ll[0] + k <= 180:
-                self.ll[0] += k
-            self.show_image()
-        if event.key() == Qt.Key.Key_Up:
-            k = STEP[self.z // len(STEP)]
-            if -90 <= self.ll[1] + k <= 90:
-                self.ll[1] += k
-            self.show_image()
-        if event.key() == Qt.Key.Key_Down:
-            k = STEP[self.z // len(STEP)]
-            if -90 <= self.ll[1] - k <= 90:
-                self.ll[1] -= k
             self.show_image()
 
 
