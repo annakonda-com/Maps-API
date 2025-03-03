@@ -10,6 +10,10 @@ SCREEN_SIZE = [600, 600]
 STEP = [5, 2, 1, 0.5, 0.05]
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
 class ShowGeo(QWidget):
     def __init__(self):
         super().__init__()
@@ -23,7 +27,7 @@ class ShowGeo(QWidget):
 
     def search_clckd(self):
         self.ll = self.find_by_geocoder(self.input.text())
-        self.not_ness = f"{','.join(self.ll)},pm2pnl"
+        self.not_ness = f"{','.join(list(map(str, self.ll)))},pm2pnl"
         self.show_image()
 
     def find_by_geocoder(self, lost):
@@ -33,8 +37,9 @@ class ShowGeo(QWidget):
         response = requests.get(geocoder_request)
         if response:
             json_response = response.json()
-            result = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"][
-                "pos"].split()
+            result = list(
+                map(float, json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"][
+                    "pos"].split()))
         else:
             print(f"Ошибка выполнения запроса при поиске {lost}:")
             print(geocoder_request)
@@ -48,7 +53,8 @@ class ShowGeo(QWidget):
             "ll": ",".join([str(self.ll[0]), str(self.ll[1])]),
             "apikey": apikey,
             'z': self.z,
-            'theme': self.theme
+            'theme': self.theme,
+            'pt': self.not_ness
         }
         map_api_server = "https://static-maps.yandex.ru/v1"
         response = requests.get(map_api_server, params=map_params)
@@ -135,4 +141,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = ShowGeo()
     ex.show()
+    sys.excepthook = except_hook
     sys.exit(app.exec())
