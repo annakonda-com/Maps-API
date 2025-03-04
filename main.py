@@ -28,12 +28,26 @@ class ShowGeo(QWidget):
 
     def reset_clckd(self):
         self.not_ness = ''
+        self.label1.setText("")
         self.show_image()
 
     def search_clckd(self):
-        self.ll = self.find_by_geocoder(self.input.text())
+        response = self.find_by_geocoder(self.input.text())
+        self.ll = self.find_pos(response)
         self.not_ness = f"{','.join(list(map(str, self.ll)))},pm2pnl"
         self.show_image()
+
+        self.label1.setText(self.adress(response))
+
+    def find_pos(self, json_response):
+        return list(
+            map(float, json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"][
+                "pos"].split()))
+
+    def adress(self, json_response):
+        return json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
+            "GeocoderMetaData"][
+            "text"]
 
     def find_by_geocoder(self, lost):
         server_address = 'https://geocode-maps.yandex.ru/1.x/?'
@@ -42,15 +56,12 @@ class ShowGeo(QWidget):
         response = requests.get(geocoder_request)
         if response:
             json_response = response.json()
-            result = list(
-                map(float, json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["Point"][
-                    "pos"].split()))
         else:
             print(f"Ошибка выполнения запроса при поиске {lost}:")
             print(geocoder_request)
             print("Http статус:", response.status_code, "(", response.reason, ")")
             sys.exit(1)
-        return result
+        return json_response
 
     def getImage(self):
         apikey = '4dbe104a-d5c7-4d20-bb68-3ae6ac4cae00'
@@ -98,6 +109,14 @@ class ShowGeo(QWidget):
         self.reset = QPushButton(self)
         self.reset.setText("Сброс поискового результата")
         self.reset.move(130, 470)
+
+        self.label = QLabel(self)
+        self.label.setText("Адрес найденного объекта:")
+        self.label.move(15, 540)
+
+        self.label1 = QLabel(self)
+        self.label1.resize(400, 20)
+        self.label1.move(180, 540)
 
     def dark_mode(self):
         if self.radio_btn.isChecked():
