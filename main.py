@@ -4,14 +4,14 @@ import sys
 import requests
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QRadioButton, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QRadioButton, QLineEdit, QPushButton, QCheckBox
 
 SCREEN_SIZE = [600, 600]
 STEP = [5, 2, 1, 0.5, 0.05]
 
 
 def except_hook(cls, exception, traceback):
-    sys.__excepthook__(cls, exception, traceback)
+    sys.excepthook(cls, exception, traceback)
 
 
 class ShowGeo(QWidget):
@@ -24,23 +24,26 @@ class ShowGeo(QWidget):
         self.initUI()
         self.show_image()
         self.index = False
+        self.postal_index = ""
         self.search.clicked.connect(self.search_clckd)
         self.reset.clicked.connect(self.reset_clckd)
 
     def reset_clckd(self):
         self.not_ness = ''
         self.label1.setText("")
+        self.postal_index = ""
         self.show_image()
 
     def search_clckd(self):
         response = self.find_by_geocoder(self.input.text())
         self.ll = self.find_pos(response)
         self.not_ness = f"{','.join(list(map(str, self.ll)))},pm2pnl"
+        self.postal_index = self.adress_index(response)
         self.show_image()
         if not self.index:
             self.label1.setText(self.adress(response))
         else:
-            self.label1.setText(self.adress(response) + " " + self.adress_index(response))
+            self.label1.setText(self.adress(response) + " " + self.postal_index)
 
     def find_pos(self, json_response):
         return list(
@@ -111,16 +114,15 @@ class ShowGeo(QWidget):
         self.search = QPushButton(self)
         self.search.setText("Поиск")
         self.search.move(510, 500)
+        self.radio_btn1 = QCheckBox(self)
+        self.radio_btn1.setText("Тёмная тема")
+        self.radio_btn1.move(30, 470)
+        self.radio_btn1.stateChanged.connect(self.dark_mode)
 
-        self.radio_btn = QRadioButton(self)
-        self.radio_btn.setText("Тёмная тема")
-        self.radio_btn.move(30, 470)
-        self.radio_btn.toggled.connect(self.dark_mode)
-
-        self.radio_btn = QRadioButton(self)
-        self.radio_btn.setText("Приписывать почтовый индекс")
-        self.radio_btn.move(130, 470)
-        self.radio_btn.toggled.connect(self.index)
+        self.radio_btn2 = QCheckBox(self)
+        self.radio_btn2.setText("Приписывать почтовый индекс")
+        self.radio_btn2.move(130, 470)
+        self.radio_btn2.stateChanged.connect(self.index)
 
         self.reset = QPushButton(self)
         self.reset.setText("Сброс поискового результата")
@@ -135,14 +137,16 @@ class ShowGeo(QWidget):
         self.label1.move(180, 540)
 
     def index(self):
-        if self.radio_btn.isChecked():
+        if self.radio_btn2.isChecked():
             self.index = True
-            self.show_image()
+            self.label1.setText(self.label1.text() + " " + self.postal_index)
         else:
+            if self.postal_index != "":
+                self.label1.setText(" ".join(self.label1.text().split()[:-1]))
             self.index = False
 
     def dark_mode(self):
-        if self.radio_btn.isChecked():
+        if self.radio_btn1.isChecked():
             self.theme = "dark"
             self.show_image()
         else:
