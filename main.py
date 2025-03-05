@@ -23,6 +23,7 @@ class ShowGeo(QWidget):
         self.theme = "light"
         self.initUI()
         self.show_image()
+        self.index = False
         self.search.clicked.connect(self.search_clckd)
         self.reset.clicked.connect(self.reset_clckd)
 
@@ -36,8 +37,10 @@ class ShowGeo(QWidget):
         self.ll = self.find_pos(response)
         self.not_ness = f"{','.join(list(map(str, self.ll)))},pm2pnl"
         self.show_image()
-
-        self.label1.setText(self.adress(response))
+        if not self.index:
+            self.label1.setText(self.adress(response))
+        else:
+            self.label1.setText(self.adress(response) + " " + self.adress_index(response))
 
     def find_pos(self, json_response):
         return list(
@@ -48,6 +51,14 @@ class ShowGeo(QWidget):
         return json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
             "GeocoderMetaData"][
             "text"]
+
+    def adress_index(self, json_response):
+        try:
+            return \
+                json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]["metaDataProperty"][
+                    "GeocoderMetaData"]["Address"]["postal_code"]
+        except KeyError:
+            return ""
 
     def find_by_geocoder(self, lost):
         server_address = 'https://geocode-maps.yandex.ru/1.x/?'
@@ -106,9 +117,14 @@ class ShowGeo(QWidget):
         self.radio_btn.move(30, 470)
         self.radio_btn.toggled.connect(self.dark_mode)
 
+        self.radio_btn = QRadioButton(self)
+        self.radio_btn.setText("Приписывать почтовый индекс")
+        self.radio_btn.move(130, 470)
+        self.radio_btn.toggled.connect(self.index)
+
         self.reset = QPushButton(self)
         self.reset.setText("Сброс поискового результата")
-        self.reset.move(130, 470)
+        self.reset.move(330, 470)
 
         self.label = QLabel(self)
         self.label.setText("Адрес найденного объекта:")
@@ -117,6 +133,13 @@ class ShowGeo(QWidget):
         self.label1 = QLabel(self)
         self.label1.resize(400, 20)
         self.label1.move(180, 540)
+
+    def index(self):
+        if self.radio_btn.isChecked():
+            self.index = True
+            self.show_image()
+        else:
+            self.index = False
 
     def dark_mode(self):
         if self.radio_btn.isChecked():
